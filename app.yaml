@@ -1,3 +1,6 @@
 kind: wasmer.io/App.v0
 name: quantum-maze-challenge
 package: .
+
+[web]
+name = "quantum-maze"
