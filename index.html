@@ -185,6 +185,10 @@
                 </div>
             </div>
             
+            <div style="text-align: center; margin: 10px 0;">
+                <div id="gameStatus" style="color: #00ff00; font-weight: bold;">🎮 Game Ready - Press SPACE to Start</div>
+            </div>
+            
             <div class="control-section">
                 <h3>🎮 Quantum Controls</h3>
                 <div class="control-item">🔄 <strong>Arrow Keys / WASD:</strong> Navigate the quantum realm</div>
@@ -225,7 +229,19 @@
         class QuantumMazeWeb {
             constructor() {
                 this.canvas = document.getElementById('gameCanvas');
+                if (!this.canvas) {
+                    console.error('❌ Canvas element not found!');
+                    return;
+                }
+                
                 this.ctx = this.canvas.getContext('2d');
+                if (!this.ctx) {
+                    console.error('❌ Could not get 2D context!');
+                    return;
+                }
+                
+                console.log('✅ Canvas initialized:', this.canvas.width, 'x', this.canvas.height);
+                
                 this.gameState = 'menu';
                 this.score = 0;
                 this.lives = 3;
@@ -244,10 +260,18 @@
             }
             
             init() {
-                this.setupEventListeners();
-                this.generateLevel();
-                this.gameLoop();
-                this.createQuantumParticles();
+                try {
+                    console.log('🎮 Setting up game...');
+                    this.setupEventListeners();
+                    this.generateLevel();
+                    this.updateUI(); // Initialize UI
+                    console.log('🎯 Starting game loop...');
+                    this.gameLoop();
+                    this.createQuantumParticles();
+                    console.log('✅ Game setup complete!');
+                } catch (error) {
+                    console.error('❌ Game initialization failed:', error);
+                }
             }
             
             setupEventListeners() {
@@ -296,12 +320,14 @@
             }
             
             startGame() {
+                console.log('🚀 Starting new game...');
                 this.score = 0;
                 this.lives = 3;
                 this.level = 1;
                 this.qubitsCollected = 0;
                 this.generateLevel();
                 this.updateUI();
+                console.log('✅ Game started successfully!');
             }
             
             generateLevel() {
@@ -470,9 +496,32 @@
             
             updateUI() {
                 document.getElementById('score').textContent = this.score.toLocaleString();
-                document.getElementById('lives').textContent = '❤️'.repeat(this.lives);
+                document.getElementById('lives').textContent = '❤️'.repeat(Math.max(0, this.lives));
                 document.getElementById('level').textContent = this.level;
                 document.getElementById('qubits').textContent = `${this.qubitsCollected}/${this.totalQubits}`;
+                
+                // Update game status
+                const statusEl = document.getElementById('gameStatus');
+                if (statusEl) {
+                    switch(this.gameState) {
+                        case 'menu':
+                            statusEl.textContent = '🎮 Game Ready - Press SPACE to Start';
+                            statusEl.style.color = '#00ff00';
+                            break;
+                        case 'playing':
+                            statusEl.textContent = '🌌 Quantum Maze Active - Collect All Qubits!';
+                            statusEl.style.color = '#00ffff';
+                            break;
+                        case 'paused':
+                            statusEl.textContent = '⏸️ Game Paused - Press ESC to Continue';
+                            statusEl.style.color = '#ffff00';
+                            break;
+                        case 'gameOver':
+                            statusEl.textContent = '💀 Game Over - Press SPACE to Restart';
+                            statusEl.style.color = '#ff0000';
+                            break;
+                    }
+                }
             }
             
             render() {
@@ -620,21 +669,53 @@
             }
             
             gameLoop() {
-                this.update();
-                this.render();
+                try {
+                    this.update();
+                    this.render();
+                } catch (error) {
+                    console.error('❌ Game loop error:', error);
+                    // Try to recover
+                    const statusEl = document.getElementById('gameStatus');
+                    if (statusEl) {
+                        statusEl.textContent = '⚠️ Game Error - Refresh Page';
+                        statusEl.style.color = '#ff0000';
+                    }
+                }
                 requestAnimationFrame(() => this.gameLoop());
             }
         }
         
         // Initialize game when page loads
+        let game;
         window.addEventListener('load', () => {
-            new QuantumMazeWeb();
+            try {
+                console.log('🌌 Initializing Quantum Maze...');
+                game = new QuantumMazeWeb();
+                window.game = game;
+                console.log('✅ Quantum Maze initialized successfully!');
+            } catch (error) {
+                console.error('❌ Failed to initialize game:', error);
+                // Show error message on canvas
+                const canvas = document.getElementById('gameCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ff0000';
+                ctx.font = '24px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText('Game Loading Error', canvas.width / 2, canvas.height / 2);
+                ctx.font = '16px Courier New';
+                ctx.fillText('Check console for details', canvas.width / 2, canvas.height / 2 + 30);
+            }
         });
         
         // Handle game over restart
         document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' && window.game && window.game.gameState === 'gameOver') {
-                window.game.startGame();
+            if (e.key === ' ') {
+                if (game && game.gameState === 'gameOver') {
+                    game.startGame();
+                } else if (game && game.gameState === 'menu') {
+                    game.gameState = 'playing';
+                    game.startGame();
+                }
             }
         });
     </script>
