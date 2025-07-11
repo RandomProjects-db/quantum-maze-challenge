@@ -1,5 +1,3 @@
 kind: wasmer.io/App.v0
 name: quantum-maze-challenge
-owner: playstore1231231121
-package: '.'
-app_id: da_Ko6IotJU5mYN
+package: .

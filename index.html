@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Maze - AWS Build Games Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            width: 100%;
+            box-shadow: 0 2px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .title {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 0 0 20px #00ffff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #ffff00;
+        }
+        
+        .challenge-badge {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        
+        .challenge-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+        }
+        
+        .game-canvas {
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            background: #000;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        .controls-panel {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-section {
+            margin-bottom: 20px;
+        }
+        
+        .control-section h3 {
+            color: #ffff00;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ffff00;
+        }
+        
+        .control-item {
+            margin: 8px 0;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .quantum-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+        
+        .github-link {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .github-link:hover {
+            text-shadow: 0 0 10px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🌌 QUANTUM MAZE 🌌</h1>
+        <p class="subtitle">Enhanced Edition - AWS Build Games Challenge Entry</p>
+        <a href="#" class="challenge-badge">#BuildGamesChallenge #AmazonQDevCLI</a>
+    </div>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" class="game-canvas" width="800" height="600"></canvas>
+        
+        <div class="controls-panel">
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="score">0</div>
+                    <div>Score</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="lives">❤️❤️❤️</div>
+                    <div>Lives</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="level">1</div>
+                    <div>Level</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="qubits">0/10</div>
+                    <div>Qubits</div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>🎮 Quantum Controls</h3>
+                <div class="control-item">🔄 <strong>Arrow Keys / WASD:</strong> Navigate the quantum realm</div>
+                <div class="control-item">🚀 <strong>SPACE:</strong> Start your quantum journey</div>
+                <div class="control-item">⏸️ <strong>ESC:</strong> Pause quantum time</div>
+                <div class="control-item">🔇 <strong>M:</strong> Toggle quantum audio</div>
+            </div>
+            
+            <div class="control-section">
+                <h3>⚛️ Quantum Mechanics</h3>
+                <div class="control-item">🟢 <strong>Superposition Walls:</strong> Phase through when transparent</div>
+                <div class="control-item">🌀 <strong>Quantum Tunnels:</strong> Teleport between paired portals</div>
+                <div class="control-item">🔗 <strong>Entangled Qubits:</strong> Collect pairs for massive bonuses</div>
+                <div class="control-item">👻 <strong>Decoherence Ghosts:</strong> Three AI types hunting you</div>
+            </div>
+            
+            <div class="control-section">
+                <h3>🔬 Power-ups</h3>
+                <div class="control-item">🟢 <strong>Superposition (8s):</strong> Pass through quantum walls</div>
+                <div class="control-item">🟡 <strong>Measurement (5s):</strong> Capture ghosts temporarily</div>
+                <div class="control-item">🟣 <strong>Entanglement (10s):</strong> Link ghost pairs together</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>🏆 Built for AWS Build Games Challenge with <strong>Amazon Q Developer CLI</strong></p>
+        <p>
+            <a href="https://github.com/RandomProjects-db/quantum-maze-challenge" class="github-link" target="_blank">
+                📁 View Source Code on GitHub
+            </a>
+        </p>
+        <p>🎯 Experience quantum computing through immersive gameplay!</p>
+    </div>
+
+    <script>
+        // Quantum Maze Web Game Implementation
+        class QuantumMazeWeb {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gameState = 'menu';
+                this.score = 0;
+                this.lives = 3;
+                this.level = 1;
+                this.qubitsCollected = 0;
+                this.totalQubits = 10;
+                
+                // Game objects
+                this.player = { x: 50, y: 50, size: 20, color: '#00ffff' };
+                this.qubits = [];
+                this.ghosts = [];
+                this.walls = [];
+                this.particles = [];
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.generateLevel();
+                this.gameLoop();
+                this.createQuantumParticles();
+            }
+            
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+                document.addEventListener('keyup', (e) => this.handleKeyRelease(e));
+            }
+            
+            handleKeyPress(e) {
+                const key = e.key.toLowerCase();
+                
+                if (key === ' ') {
+                    if (this.gameState === 'menu') {
+                        this.gameState = 'playing';
+                        this.startGame();
+                    }
+                } else if (key === 'escape') {
+                    this.gameState = this.gameState === 'paused' ? 'playing' : 'paused';
+                }
+                
+                // Movement
+                if (this.gameState === 'playing') {
+                    const speed = 3;
+                    switch(key) {
+                        case 'arrowup':
+                        case 'w':
+                            this.player.y = Math.max(0, this.player.y - speed);
+                            break;
+                        case 'arrowdown':
+                        case 's':
+                            this.player.y = Math.min(this.canvas.height - this.player.size, this.player.y + speed);
+                            break;
+                        case 'arrowleft':
+                        case 'a':
+                            this.player.x = Math.max(0, this.player.x - speed);
+                            break;
+                        case 'arrowright':
+                        case 'd':
+                            this.player.x = Math.min(this.canvas.width - this.player.size, this.player.x + speed);
+                            break;
+                    }
+                }
+            }
+            
+            handleKeyRelease(e) {
+                // Handle key releases if needed
+            }
+            
+            startGame() {
+                this.score = 0;
+                this.lives = 3;
+                this.level = 1;
+                this.qubitsCollected = 0;
+                this.generateLevel();
+                this.updateUI();
+            }
+            
+            generateLevel() {
+                // Generate qubits
+                this.qubits = [];
+                for (let i = 0; i < this.totalQubits; i++) {
+                    this.qubits.push({
+                        x: Math.random() * (this.canvas.width - 20) + 10,
+                        y: Math.random() * (this.canvas.height - 20) + 10,
+                        size: 8,
+                        color: Math.random() > 0.8 ? '#ff00ff' : '#ffff00', // Some entangled (magenta)
+                        collected: false,
+                        rotation: 0
+                    });
+                }
+                
+                // Generate ghosts
+                this.ghosts = [];
+                const ghostTypes = ['#ff0000', '#0000ff', '#8b4513']; // Red, Blue, Brown
+                for (let i = 0; i < 3; i++) {
+                    this.ghosts.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: 15,
+                        color: ghostTypes[i],
+                        dx: (Math.random() - 0.5) * 2,
+                        dy: (Math.random() - 0.5) * 2,
+                        type: ['chaser', 'wanderer', 'guardian'][i]
+                    });
+                }
+                
+                // Generate superposition walls
+                this.walls = [];
+                for (let i = 0; i < 5; i++) {
+                    this.walls.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        width: 100,
+                        height: 20,
+                        opacity: 0.5,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            
+            update() {
+                if (this.gameState !== 'playing') return;
+                
+                // Update ghosts
+                this.ghosts.forEach(ghost => {
+                    if (ghost.type === 'chaser') {
+                        // Chase player
+                        const dx = this.player.x - ghost.x;
+                        const dy = this.player.y - ghost.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist > 0) {
+                            ghost.dx = (dx / dist) * 1.5;
+                            ghost.dy = (dy / dist) * 1.5;
+                        }
+                    } else if (ghost.type === 'wanderer') {
+                        // Random movement
+                        if (Math.random() < 0.02) {
+                            ghost.dx = (Math.random() - 0.5) * 3;
+                            ghost.dy = (Math.random() - 0.5) * 3;
+                        }
+                    }
+                    
+                    ghost.x += ghost.dx;
+                    ghost.y += ghost.dy;
+                    
+                    // Bounce off walls
+                    if (ghost.x < 0 || ghost.x > this.canvas.width) ghost.dx *= -1;
+                    if (ghost.y < 0 || ghost.y > this.canvas.height) ghost.dy *= -1;
+                    
+                    ghost.x = Math.max(0, Math.min(this.canvas.width, ghost.x));
+                    ghost.y = Math.max(0, Math.min(this.canvas.height, ghost.y));
+                });
+                
+                // Update superposition walls
+                this.walls.forEach(wall => {
+                    wall.phase += 0.05;
+                    wall.opacity = (Math.sin(wall.phase) + 1) * 0.3 + 0.2;
+                });
+                
+                // Update qubits rotation
+                this.qubits.forEach(qubit => {
+                    if (!qubit.collected) {
+                        qubit.rotation += 0.1;
+                    }
+                });
+                
+                // Check collisions
+                this.checkCollisions();
+            }
+            
+            checkCollisions() {
+                // Player-Qubit collisions
+                this.qubits.forEach(qubit => {
+                    if (!qubit.collected) {
+                        const dx = this.player.x - qubit.x;
+                        const dy = this.player.y - qubit.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < this.player.size) {
+                            qubit.collected = true;
+                            this.qubitsCollected++;
+                            this.score += qubit.color === '#ff00ff' ? 25 : 10; // Entangled qubits worth more
+                            this.updateUI();
+                            
+                            // Create collection effect
+                            this.createParticleEffect(qubit.x, qubit.y, qubit.color);
+                            
+                            if (this.qubitsCollected >= this.totalQubits) {
+                                this.nextLevel();
+                            }
+                        }
+                    }
+                });
+                
+                // Player-Ghost collisions
+                this.ghosts.forEach(ghost => {
+                    const dx = this.player.x - ghost.x;
+                    const dy = this.player.y - ghost.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < this.player.size + ghost.size) {
+                        this.playerHit();
+                    }
+                });
+            }
+            
+            playerHit() {
+                this.lives--;
+                this.updateUI();
+                
+                if (this.lives <= 0) {
+                    this.gameState = 'gameOver';
+                } else {
+                    // Reset player position
+                    this.player.x = 50;
+                    this.player.y = 50;
+                }
+            }
+            
+            nextLevel() {
+                this.level++;
+                this.qubitsCollected = 0;
+                this.score += 500; // Level bonus
+                this.generateLevel();
+                this.updateUI();
+            }
+            
+            createParticleEffect(x, y, color) {
+                for (let i = 0; i < 8; i++) {
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        dx: (Math.random() - 0.5) * 6,
+                        dy: (Math.random() - 0.5) * 6,
+                        color: color,
+                        life: 30,
+                        maxLife: 30
+                    });
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('score').textContent = this.score.toLocaleString();
+                document.getElementById('lives').textContent = '❤️'.repeat(this.lives);
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('qubits').textContent = `${this.qubitsCollected}/${this.totalQubits}`;
+            }
+            
+            render() {
+                // Clear canvas
+                this.ctx.fillStyle = '#000011';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                if (this.gameState === 'menu') {
+                    this.renderMenu();
+                } else if (this.gameState === 'playing' || this.gameState === 'paused') {
+                    this.renderGame();
+                    if (this.gameState === 'paused') {
+                        this.renderPauseOverlay();
+                    }
+                } else if (this.gameState === 'gameOver') {
+                    this.renderGameOver();
+                }
+            }
+            
+            renderMenu() {
+                this.ctx.fillStyle = '#00ffff';
+                this.ctx.font = '48px Courier New';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('QUANTUM MAZE', this.canvas.width / 2, this.canvas.height / 2 - 50);
+                
+                this.ctx.font = '24px Courier New';
+                this.ctx.fillStyle = '#ffff00';
+                this.ctx.fillText('Press SPACE to Start', this.canvas.width / 2, this.canvas.height / 2 + 20);
+                
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = '16px Courier New';
+                this.ctx.fillText('Built with Amazon Q Developer CLI', this.canvas.width / 2, this.canvas.height / 2 + 60);
+            }
+            
+            renderGame() {
+                // Render superposition walls
+                this.walls.forEach(wall => {
+                    this.ctx.fillStyle = `rgba(0, 255, 0, ${wall.opacity})`;
+                    this.ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+                });
+                
+                // Render qubits
+                this.qubits.forEach(qubit => {
+                    if (!qubit.collected) {
+                        this.ctx.save();
+                        this.ctx.translate(qubit.x, qubit.y);
+                        this.ctx.rotate(qubit.rotation);
+                        
+                        // Draw qubit with quantum effect
+                        this.ctx.fillStyle = qubit.color;
+                        this.ctx.fillRect(-qubit.size/2, -qubit.size/2, qubit.size, qubit.size);
+                        
+                        // Add glow effect
+                        this.ctx.shadowColor = qubit.color;
+                        this.ctx.shadowBlur = 10;
+                        this.ctx.strokeStyle = qubit.color;
+                        this.ctx.strokeRect(-qubit.size/2, -qubit.size/2, qubit.size, qubit.size);
+                        
+                        this.ctx.restore();
+                    }
+                });
+                
+                // Render ghosts
+                this.ghosts.forEach(ghost => {
+                    this.ctx.fillStyle = ghost.color;
+                    this.ctx.shadowColor = ghost.color;
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.beginPath();
+                    this.ctx.arc(ghost.x, ghost.y, ghost.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.shadowBlur = 0;
+                });
+                
+                // Render player
+                this.ctx.fillStyle = this.player.color;
+                this.ctx.shadowColor = this.player.color;
+                this.ctx.shadowBlur = 20;
+                this.ctx.fillRect(this.player.x, this.player.y, this.player.size, this.player.size);
+                this.ctx.shadowBlur = 0;
+                
+                // Render particles
+                this.particles = this.particles.filter(particle => {
+                    particle.x += particle.dx;
+                    particle.y += particle.dy;
+                    particle.life--;
+                    
+                    const alpha = particle.life / particle.maxLife;
+                    this.ctx.fillStyle = particle.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    this.ctx.fillRect(particle.x, particle.y, 3, 3);
+                    
+                    return particle.life > 0;
+                });
+            }
+            
+            renderPauseOverlay() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.fillStyle = '#00ffff';
+                this.ctx.font = '36px Courier New';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('PAUSED', this.canvas.width / 2, this.canvas.height / 2);
+                
+                this.ctx.font = '18px Courier New';
+                this.ctx.fillText('Press ESC to continue', this.canvas.width / 2, this.canvas.height / 2 + 40);
+            }
+            
+            renderGameOver() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.font = '48px Courier New';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2 - 50);
+                
+                this.ctx.fillStyle = '#ffff00';
+                this.ctx.font = '24px Courier New';
+                this.ctx.fillText(`Final Score: ${this.score.toLocaleString()}`, this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.fillText(`Level Reached: ${this.level}`, this.canvas.width / 2, this.canvas.height / 2 + 30);
+                
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = '18px Courier New';
+                this.ctx.fillText('Press SPACE to restart', this.canvas.width / 2, this.canvas.height / 2 + 80);
+            }
+            
+            createQuantumParticles() {
+                // Create floating quantum particles in background
+                setInterval(() => {
+                    if (Math.random() < 0.3) {
+                        const particle = document.createElement('div');
+                        particle.className = 'quantum-particle';
+                        particle.style.left = Math.random() * window.innerWidth + 'px';
+                        particle.style.top = window.innerHeight + 'px';
+                        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                        document.body.appendChild(particle);
+                        
+                        setTimeout(() => {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }, 5000);
+                    }
+                }, 500);
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            new QuantumMazeWeb();
+        });
+        
+        // Handle game over restart
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && window.game && window.game.gameState === 'gameOver') {
+                window.game.startGame();
+            }
+        });
+    </script>
+</body>
+</html>
