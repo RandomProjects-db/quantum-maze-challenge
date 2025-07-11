@@ -104,7 +104,7 @@ Navigate through quantum mazes as the **Quantum Explorer**, collecting qubits wh
 ### Quick Start
 ```bash
 # Clone the game
-git clone <repository-url>
+git clone https://github.com/RandomProjects-db/quantum-maze-challenge.git
 cd quantum_maze
 
 # Install dependencies
