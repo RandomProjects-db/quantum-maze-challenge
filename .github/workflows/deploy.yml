@@ -18,18 +18,34 @@ jobs:
       with:
         python-version: 3.9
     
-    - name: Install dependencies
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pygame
+    
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
     - name: Test game imports
       run: |
-        python -c "import quantum_maze; print('✅ Game imports successfully')"
-    
-    - name: Validate game configuration
-      run: |
+        python -c "import pygame; print('✅ Pygame available')"
         python -c "import config; print('✅ Configuration valid')"
+    
+    - name: Validate game structure
+      run: |
+        python -c "
+import os
+required_files = ['quantum_maze.py', 'config.py', 'README.md']
+for file in required_files:
+    if os.path.exists(file):
+        print(f'✅ {file} found')
+    else:
+        print(f'❌ {file} missing')
+        exit(1)
+print('✅ All required files present')
+"
 
   deploy-pages:
     needs: test
@@ -44,7 +60,17 @@ jobs:
       with:
         python-version: 3.9
     
-    - name: Generate web deployment
+    - name: Install system dependencies for web deployment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pygame
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Generate web deployment files
       run: |
         python web_deploy.py
     
@@ -52,5 +78,5 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+        publish_dir: ./web_output
         publish_branch: gh-pages

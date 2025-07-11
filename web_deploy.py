@@ -22,6 +22,9 @@ def setup_web_environment():
 
 def create_web_interface():
     """Create a simple web interface for the game"""
+    # Create web output directory
+    os.makedirs('web_output', exist_ok=True)
+    
     html_content = """
 <!DOCTYPE html>
 <html lang="en">
@@ -167,10 +170,15 @@ def create_web_interface():
 </html>
     """
     
-    with open('index.html', 'w') as f:
+    with open('web_output/index.html', 'w') as f:
         f.write(html_content)
     
-    print("✅ Web interface created: index.html")
+    # Copy README to web output
+    if os.path.exists('README.md'):
+        import shutil
+        shutil.copy('README.md', 'web_output/README.md')
+    
+    print("✅ Web interface created: web_output/index.html")
 
 def main():
     """Main web deployment function"""
