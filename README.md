@@ -1,7 +1,11 @@
 # Quantum Maze - Enhanced Edition
 ## AWS Build Games Challenge Entry
 
+🎮 **[GitHub Repository](https://github.com/RandomProjects-db/quantum-maze-challenge)** | 🚀 **[Play on Replit](https://replit.com/@RandomProjects-db/quantum-maze-challenge)** *(Coming Soon)*
+
 A retro-inspired maze game that creatively incorporates quantum computing concepts into classic Pac-Man style gameplay, now with enhanced audio, visual effects, and advanced quantum mechanics!
+
+**Built entirely with Amazon Q Developer CLI for the AWS Build Games Challenge!**
 
 ![Quantum Maze](https://img.shields.io/badge/Game-Quantum%20Maze-blue) ![Python](https://img.shields.io/badge/Python-3.7+-green) ![PyGame](https://img.shields.io/badge/PyGame-2.0+-red) ![Audio](https://img.shields.io/badge/Audio-Enhanced-purple)
 

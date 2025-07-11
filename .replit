@@ -1,0 +1,8 @@
+run = "python quantum_maze.py"
+language = "python3"
+
+[nix]
+channel = "stable-22_11"
+
+[deployment]
+run = ["sh", "-c", "python quantum_maze.py"]

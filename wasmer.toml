@@ -3,7 +3,7 @@ name = "playstore1231231121/quantum-maze-challenge"
 version = "1.0.0"
 description = "Quantum physics-enhanced retro maze game - AWS Build Games Challenge"
 license = "MIT"
-repository = "https://github.com/playstore1231231121/quantum-maze-challenge"
+repository = "https://github.com/RandomProjects-db/quantum-maze-challenge"
 
 [[module]]
 name = "quantum-maze"
