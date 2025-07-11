@@ -1,9 +1,5 @@
 { pkgs }: {
   deps = [
-    pkgs.python310Full
-    pkgs.replitPackages.prybar-python310
-    pkgs.replitPackages.stderred
-    pkgs.python310Packages.pygame
-    pkgs.python310Packages.numpy
+    pkgs.python3
   ];
 }
